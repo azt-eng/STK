@@ -1865,7 +1865,7 @@
         connectionLine.setAttribute('d', generateSimpleWavyPath(startX, startY, startX, startY));
         connectionLine.classList.remove('success', 'error');
         connectionLine.classList.add('tracking');
-        connectionLine.style.strokeWidth = '4';
+        connectionLine.style.strokeWidth = '5';
 
         document.getElementById("btn-cancel").disabled = false;
         document.getElementById("game-subtitle-tag").textContent = "Recherche d'association";
@@ -1882,9 +1882,9 @@
         connectionLine.setAttribute('d', generateSimpleWavyPath(startX, startY, endX, endY));
 
         if (selectedCards[0].card.pairId === selectedCards[1].card.pairId) {
-          connectionLine.style.strokeWidth = '16';
+          connectionLine.style.strokeWidth = '7.5';
         } else {
-          connectionLine.style.strokeWidth = '2';
+          connectionLine.style.strokeWidth = '3.5';
         }
 
         setTimeout(validateSelectedPair, 700);
@@ -2262,11 +2262,11 @@
           let normalizedDist = Math.min(minDist, effectRadius) / effectRadius;
 
           if (closestCard.dataset.pairId === card1.card.pairId) {
-            let thickness = 4 + (1 - normalizedDist) * 12;
+            let thickness = 5 + (1 - normalizedDist) * 2.5;
             connectionLine.style.strokeWidth = thickness;
           } else {
-            let thickness = 4 - (1 - normalizedDist) * 3;
-            connectionLine.style.strokeWidth = Math.max(1, thickness);
+            let thickness = 5 - (1 - normalizedDist) * 1.5;
+            connectionLine.style.strokeWidth = Math.max(3.5, thickness);
           }
         }
       }
