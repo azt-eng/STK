@@ -1770,15 +1770,15 @@
       const containerH = rect.height || (window.innerHeight - 300);
 
       // Responsive card width / height
-      let cardW = 150;
-      let cardH = 224;
+      let cardW = 165;
+      let cardH = 246;
 
       if (containerW < 600) {
-        cardW = 95;
-        cardH = 142;
+        cardW = 105;
+        cardH = 157;
       } else if (containerW < 900) {
-        cardW = 120;
-        cardH = 179;
+        cardW = 135;
+        cardH = 201;
       }
 
       // Add a safety margin to prevent cards from touching/bleeding out of boundaries
@@ -1796,9 +1796,9 @@
       // Preserve the aspect ratio of 130 / 194
       const aspect = 130 / 194;
       
-      // Allow cards to take up to 93% of cell height and 93% of cell width
-      const maxH = cellH * 0.93;
-      const maxW = minCellW * 0.93;
+      // Allow cards to take up to 96% of cell height and 96% of cell width
+      const maxH = cellH * 0.96;
+      const maxW = minCellW * 0.96;
 
       if (cardH > maxH) {
         cardH = maxH;
