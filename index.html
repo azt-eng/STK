@@ -1,11 +1,423 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STK architecture — Le jeu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&family=Montserrat:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      background: #ffffff;
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    /* Le canvas garde l'aspect ratio exact 1280/832 de l'image originale */
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+    }
+
+    .canvas {
+      position: relative;
+      width: 100%;
+      max-width: 100vw;
+      aspect-ratio: 1280/832;
+      max-height: 100vh;
+      overflow: hidden;
+      background-image: url('image/bg.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      transform: translate3d(0, 0, 0);
+      will-change: transform;
+      animation: fadeIn 1.2s ease both;
+    }
+
+    /* ===== LOGO / TYPOGRAPHIE ===== */
+    .brand-logo {
+      position: absolute;
+      left: 6%;
+      top: 8%;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Montserrat', sans-serif;
+      z-index: 10;
+      animation: fadeIn 1.5s ease both;
+    }
+
+    .brand-logo-stk {
+      font-size: 46px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      color: #1a1a1a;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+
+    .brand-logo-arch {
+      font-size: 19px;
+      font-weight: 300;
+      letter-spacing: 0.35em;
+      color: #555555;
+      text-transform: uppercase;
+      margin-top: 8px;
+    }
+
+    /* ===== CALQUE CARTES FLOTTANTES ===== */
+    .cards-container {
+      position: absolute;
+      left: 59.5%;
+      top: 15.5%;
+      width: 39.219%;
+      height: 66.707%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .card {
+      position: absolute;
+      width: 50%;
+      aspect-ratio: 222/330;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      will-change: transform, filter;
+    }
+
+    .card-martin {
+      left: 2%;
+      bottom: 2%;
+      background-image: url('image/Martin_pêcheur.png');
+      z-index: 2;
+      filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.20));
+      animation: floatEolienne 5.8s ease-in-out infinite alternate, cardsIn 1.2s 0.4s ease both;
+    }
+
+    .card-shinkansen {
+      right: 2%;
+      bottom: 2%;
+      background-image: url('image/shinkansen.png');
+      z-index: 3;
+      filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.24));
+      animation: floatMonkey 6.4s ease-in-out infinite alternate, cardsIn 1.2s 0.6s ease both;
+    }
+
+    .cards-floor-shadow {
+      position: absolute;
+      left: 8%;
+      bottom: -16%;
+      width: 84%;
+      height: 48px;
+      background-image: url('image/Frame 4.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      z-index: 0;
+      opacity: 0.6;
+      filter: blur(1px);
+      will-change: transform, opacity;
+      animation: floatShadow 6s ease-in-out infinite alternate, cardsIn 1.2s 0.8s ease both;
+    }
+
+    @keyframes floatShadow {
+      0% {
+        scale: 0.92;
+        opacity: 0.4;
+      }
+
+      100% {
+        scale: 1.03;
+        opacity: 0.75;
+      }
+    }
+
+    /* Oscillations et rotations asynchrones adaptées aux cartes */
+
+    @keyframes floatEolienne {
+      0% {
+        translate: 0 0;
+        rotate: -10deg;
+        filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.20));
+      }
+
+      100% {
+        translate: 0 -12px;
+        rotate: -8deg;
+        filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.28));
+      }
+    }
+
+    @keyframes floatMonkey {
+      0% {
+        translate: 0 0;
+        rotate: 10deg;
+        filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.24));
+      }
+
+      100% {
+        translate: 0 -14px;
+        rotate: 8deg;
+        filter: drop-shadow(0 20px 32px rgba(0, 0, 0, 0.32));
+      }
+    }
+
+    @keyframes cardsIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.97);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* ===== BOUTON CTA INTÉGRÉ ===== */
+    .play-btn {
+      position: absolute;
+      left: 50%;
+      top: 79.5%;
+      transform: translateX(-50%);
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 36px 14px 22px;
+      background: #0a0a0a;
+      color: #faf6ef;
+      border: none;
+      border-radius: 999px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      cursor: pointer;
+      z-index: 5;
+      box-shadow:
+        0 10px 26px -8px rgba(0, 0, 0, .5),
+        0 0 0 0 rgba(90, 107, 72, .5);
+      transition: transform .3s cubic-bezier(.2, .7, .2, 1), box-shadow .3s, background .3s;
+      animation:
+        pulse 2.4s ease-in-out infinite,
+        btnIn 1s .8s ease both;
+      white-space: nowrap;
+    }
+
+    .play-btn:hover {
+      transform: translateX(-50%) translateY(-3px) scale(1.04);
+      background: #5a6b48;
+    }
+
+    .play-btn:active {
+      transform: translateX(-50%) translateY(-1px) scale(.99);
+    }
+
+    .play-btn .icon {
+      width: 28px;
+      height: 28px;
+      background: #faf6ef;
+      color: #0a0a0a;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color .3s;
+    }
+
+    .play-btn:hover .icon {
+      color: #5a6b48;
+    }
+
+    .play-btn .icon svg {
+      display: block
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow:
+          0 10px 26px -8px rgba(0, 0, 0, .5),
+          0 0 0 0 rgba(90, 107, 72, .5);
+      }
+
+      50% {
+        box-shadow:
+          0 12px 30px -8px rgba(0, 0, 0, .5),
+          0 0 0 12px rgba(90, 107, 72, 0);
+      }
+    }
+
+    @keyframes btnIn {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    /* ===== LOADER ===== */
+    .loader {
+      position: fixed;
+      inset: 0;
+      background: #0a0a0a;
+      color: #faf6ef;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .5s ease;
+    }
+
+    .loader.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .loader-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 28px;
+      letter-spacing: .04em;
+    }
+
+    .loader-bar {
+      width: 240px;
+      height: 1px;
+      background: rgba(244, 239, 230, .2);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .loader-bar::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: #faf6ef;
+      transform-origin: left;
+      animation: fill 1.6s ease forwards;
+    }
+
+    @keyframes fill {
+      from {
+        transform: scaleX(0)
+      }
+
+      to {
+        transform: scaleX(1)
+      }
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 720px) {
+      .play-btn {
+        padding: 12px 24px 12px 16px;
+        font-size: 11px;
+        gap: 10px;
+        letter-spacing: .18em;
+      }
+
+      .play-btn .icon {
+        width: 22px;
+        height: 22px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-    <h1>Je déteste HETIC</h1>
+
+
+
+  <div class="stage">
+    <div class="canvas" role="img" aria-label="STK architechture - écran de présentation">
+
+      <div class="brand-logo">
+        <span class="brand-logo-stk">STK</span>
+        <span class="brand-logo-arch">architecture</span>
+      </div>
+
+      <div class="cards-container" aria-hidden="true">
+        <div class="card card-martin"></div>
+        <div class="card card-shinkansen"></div>
+        <div class="cards-floor-shadow"></div>
+      </div>
+      <button class="play-btn" id="playBtn" aria-label="Lancer le jeu">
+        <span class="icon">
+          <svg width="10" height="11" viewBox="0 0 11 13" fill="currentColor">
+            <path d="M0 0v13l11-6.5L0 0z" />
+          </svg>
+        </span>
+        <span>Lancer le jeu</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="loader" id="loader" aria-hidden="true">
+    <div class="loader-text">Chargement…</div>
+    <div class="loader-bar"></div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('playBtn');
+    const loader = document.getElementById('loader');
+
+    btn.addEventListener('click', () => {
+      loader.classList.add('active');
+      loader.setAttribute('aria-hidden', 'false');
+      
+      // On attend la fin de l'animation de la barre de chargement (1.6s) pour une transition plus fluide
+      setTimeout(() => {
+        window.location.href = 'game.html';
+      }, 1600);
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        btn.click();
+      }
+    });
+  </script>
+
 </body>
+
 </html>

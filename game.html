@@ -1,0 +1,2333 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STK Architecture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --cream: #F5F0E8;
+      --cream-light: #FAF7F2;
+      --white: #FFFFFF;
+      --teal: #1E6B5E;
+      --teal-dark: #12473E;
+      --teal-light: #2D8E7D;
+      --teal-pale: #B8D8D3;
+      --teal-xpale: #E6F2F0;
+      --text-dark: #16251D;
+      --text-mid: #3B5448;
+      --text-light: #708C7F;
+      --warm-gray: #D0C7B9;
+      --error: #D9534F;
+      --error-bg: #FDF2F2;
+      --success: #2E7D32;
+      --success-bg: #E8F5E9;
+      --font-display: 'Playfair Display', serif;
+      --font-body: 'DM Sans', sans-serif;
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 8px;
+      --shadow-sm: 0 4px 12px rgba(30, 107, 94, 0.05);
+      --shadow-md: 0 10px 30px rgba(30, 107, 94, 0.1);
+      --shadow-lg: 0 20px 50px rgba(22, 37, 29, 0.15);
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--cream);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Organic noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Background organic shapes */
+    .bg-shape-1 {
+      position: absolute;
+      top: -10%;
+      right: -5%;
+      width: 50vw;
+      height: 50vw;
+      background: radial-gradient(circle, rgba(30, 107, 94, 0.06) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-shape-2 {
+      position: absolute;
+      bottom: -10%;
+      left: -5%;
+      width: 40vw;
+      height: 40vw;
+      background: radial-gradient(circle, rgba(184, 216, 211, 0.2) 0%, transparent 75%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ══════════════════════════════════════
+   HEADER
+   ══════════════════════════════════════ */
+    .site-header {
+      background: rgba(250, 247, 242, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(208, 199, 185, 0.4);
+      padding: 16px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .logo {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--teal);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: var(--transition);
+    }
+
+    .logo:hover {
+      opacity: 0.85;
+      transform: translateY(-1px);
+    }
+
+    .logo-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--teal-light);
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .progress-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .progress-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .progress-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
+
+    .progress-track {
+      width: 200px;
+      height: 8px;
+      background: var(--teal-xpale);
+      border: 1px solid rgba(30, 107, 94, 0.15);
+      border-radius: 99px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--teal-light), var(--teal));
+      border-radius: 99px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .progress-pct {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--teal);
+      min-width: 45px;
+      text-align: right;
+    }
+
+    /* ══════════════════════════════════════
+   GAME LAYOUT
+   ══════════════════════════════════════ */
+    .game-layout {
+      display: flex;
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Main Content Area */
+    .game-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: rgba(250, 247, 242, 0.3);
+    }
+
+    .game-main-header {
+      padding: 32px 48px;
+      border-bottom: 1px solid rgba(208, 199, 185, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .game-title-area {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .game-tag {
+      display: inline-block;
+      align-self: flex-start;
+      background: var(--teal-xpale);
+      color: var(--teal);
+      border: 1px solid var(--teal-pale);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 99px;
+    }
+
+    .game-heading {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      line-height: 1.15;
+    }
+
+    .game-heading em {
+      font-style: italic;
+      color: var(--teal-light);
+    }
+
+    .game-stats {
+      font-size: 0.9rem;
+      color: var(--text-mid);
+      background: var(--white);
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(208, 199, 185, 0.4);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .game-stats strong {
+      color: var(--teal);
+      font-size: 1.05rem;
+    }
+
+    /* Cards Container & Scattered Positioning */
+    .cards-container {
+      flex: 1;
+      padding: 0;
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      min-height: 650px;
+    }
+
+    .cards-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .card {
+      position: absolute;
+      width: 130px;
+      height: 194px;
+      border-radius: var(--radius-md);
+      border: 3px solid var(--white);
+      box-shadow: 0 8px 24px rgba(22, 37, 29, 0.15);
+      cursor: pointer;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s, border-color 0.3s, opacity 0.4s;
+      box-sizing: border-box;
+      pointer-events: auto;
+      z-index: 10;
+      transform: rotate(var(--rand-rot, 0deg));
+    }
+
+    .card:not(.active):hover {
+      transform: scale(1.15) rotate(var(--rand-rot, 0deg));
+      box-shadow: 0 16px 36px rgba(30, 107, 94, 0.35);
+      border-color: var(--teal-pale);
+      z-index: 50;
+    }
+
+    .card.active {
+      transform: scale(1.12) rotate(var(--rand-rot, 0deg));
+      border-color: var(--teal);
+      box-shadow: 0 0 0 4px rgba(30, 107, 94, 0.25), 0 16px 36px rgba(30, 107, 94, 0.4);
+      animation: coolVibe 0.4s ease-in-out infinite;
+      z-index: 40;
+    }
+
+    .card.matched {
+      transform: scale(0) rotate(var(--rand-rot, 0deg));
+      opacity: 0;
+      pointer-events: none;
+      animation: none;
+      transition: transform 0.5s ease, opacity 0.5s ease;
+    }
+
+    .card.error {
+      border-color: var(--error);
+      box-shadow: 0 0 0 4px rgba(217, 83, 79, 0.25);
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: scale(1.12) translateX(0) rotate(var(--rand-rot, 0deg));
+      }
+
+      20%,
+      60% {
+        transform: scale(1.12) translateX(-6px) rotate(var(--rand-rot, 0deg));
+      }
+
+      40%,
+      80% {
+        transform: scale(1.12) translateX(6px) rotate(var(--rand-rot, 0deg));
+      }
+    }
+
+    @keyframes coolVibe {
+
+      0%,
+      100% {
+        transform: scale(1.12) translate(0, 0) rotate(var(--rand-rot, 0deg));
+      }
+
+      25% {
+        transform: scale(1.12) translate(-2px, 0) rotate(var(--rand-rot, 0deg));
+      }
+
+      50% {
+        transform: scale(1.12) translate(0, -1px) rotate(var(--rand-rot, 0deg));
+      }
+
+      75% {
+        transform: scale(1.12) translate(2px, 0) rotate(var(--rand-rot, 0deg));
+      }
+    }
+
+    /* PLAYER DRAWING SVG OVERLAYS */
+    #drawing-area {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 60;
+      transition: opacity 0.3s ease;
+    }
+
+    #connecting-line {
+      fill: none;
+      stroke-linecap: round;
+      opacity: 0;
+      transition: stroke 0.3s ease, opacity 0.2s ease;
+    }
+
+    #connecting-line.tracking {
+      opacity: 0.6;
+      stroke: var(--teal-light);
+    }
+
+    #connecting-line.success {
+      opacity: 1;
+      stroke: var(--success);
+    }
+
+    #connecting-line.error {
+      opacity: 1;
+      stroke: var(--error);
+    }
+
+    /* DECORATIONS SVG AREA */
+    #decorations-area {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 600;
+      pointer-events: none;
+    }
+
+    .deco-path {
+      fill: none;
+      stroke-linecap: round;
+      animation: drawDeco forwards;
+    }
+
+    @keyframes drawDeco {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    /* Action Bar */
+    .game-action-bar {
+      background: rgba(250, 247, 242, 0.9);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(208, 199, 185, 0.4);
+      padding: 20px 48px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 16px;
+      z-index: 10;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border-radius: var(--radius-md);
+      padding: 14px 28px;
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+    }
+
+    .btn-secondary {
+      background: var(--cream);
+      color: var(--text-mid);
+      border: 1px solid var(--warm-gray);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--white);
+      color: var(--teal);
+      border-color: var(--teal-pale);
+    }
+
+    .btn-primary {
+      background: var(--teal);
+      color: var(--white);
+      box-shadow: 0 4px 14px rgba(30, 107, 94, 0.25);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--teal-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(30, 107, 94, 0.35);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    /* ══════════════════════════════════════
+   INTRO OVERLAY (ÉLÉNA DIALOGUES)
+   ══════════════════════════════════════ */
+    .intro-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(22, 37, 29, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      transition: opacity 0.4s ease, visibility 0.4s;
+    }
+
+    .intro-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .intro-card {
+      background: var(--cream-light);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: var(--shadow-lg);
+      width: 90%;
+      max-width: 820px;
+      padding: 48px;
+      display: flex;
+      align-items: center;
+      gap: 48px;
+      position: relative;
+      overflow: hidden;
+      transform: scale(0.95);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+    }
+
+    .intro-overlay:not(.hidden) .intro-card {
+      transform: scale(1);
+    }
+
+    /* Floating ambient circles inside the card */
+    .intro-card::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      left: -80px;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(184, 216, 211, 0.25) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .character-section {
+      flex: 0 0 240px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .character-section::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      width: 180px;
+      height: 20px;
+      background: radial-gradient(ellipse at center, rgba(30, 107, 94, 0.12) 0%, transparent 75%);
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    .character-img {
+      width: 100%;
+      max-height: 380px;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 20px rgba(30, 107, 94, 0.15));
+      z-index: 2;
+      animation: charFloat 4s ease-in-out infinite;
+      transition: opacity 0.25s ease;
+    }
+
+    @keyframes charFloat {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .dialogue-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .dialogue-badge {
+      align-self: flex-start;
+      background: var(--teal);
+      color: var(--white);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 99px;
+      box-shadow: 0 2px 8px rgba(30, 107, 94, 0.25);
+    }
+
+    .dialogue-bubble {
+      position: relative;
+      background: var(--white);
+      border: 1px solid rgba(208, 199, 185, 0.5);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Triangle for bubble */
+    .dialogue-bubble::after {
+      content: '';
+      position: absolute;
+      left: -12px;
+      top: 50%;
+      transform: translateY(-50%) rotate(45deg);
+      width: 24px;
+      height: 24px;
+      background: var(--white);
+      border-left: 1px solid rgba(208, 199, 185, 0.5);
+      border-bottom: 1px solid rgba(208, 199, 185, 0.5);
+    }
+
+    .dialogue-title {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 10px;
+    }
+
+    .dialogue-text {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--text-mid);
+    }
+
+    .dialogue-text ul {
+      margin-top: 10px;
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .dialogue-text li {
+      font-size: 0.88rem;
+    }
+
+    .dialogue-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    /* ══════════════════════════════════════
+   FEEDBACK & SUCCESS OVERLAYS
+   ══════════════════════════════════════ */
+    .feedback-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(22, 37, 29, 0.6);
+      backdrop-filter: blur(6px);
+      z-index: 400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+
+    .feedback-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .feedback-card {
+      background: var(--cream-light);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 40px;
+      max-width: 720px;
+      width: 90%;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(30px);
+      transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feedback-char-section {
+      flex: 0 0 160px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .feedback-char-section::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      width: 120px;
+      height: 15px;
+      background: radial-gradient(ellipse at center, rgba(30, 107, 94, 0.12) 0%, transparent 75%);
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    .feedback-char-img {
+      width: 100%;
+      max-height: 240px;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 16px rgba(30, 107, 94, 0.15));
+      z-index: 2;
+      animation: charFloat 4s ease-in-out infinite;
+    }
+
+    .feedback-content-section {
+      flex: 1;
+    }
+
+    .feedback-overlay.show .feedback-card {
+      transform: translateY(0);
+    }
+
+    .feedback-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+      display: inline-block;
+      animation: pulseIcon 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulseIcon {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.1);
+      }
+    }
+
+    .feedback-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: inline-block;
+    }
+
+    .feedback-badge.success {
+      color: var(--teal);
+    }
+
+    .feedback-badge.error {
+      color: var(--error);
+    }
+
+    .feedback-title {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 16px;
+      line-height: 1.25;
+    }
+
+    .feedback-text {
+      font-size: 0.9rem;
+      line-height: 1.65;
+      color: var(--text-mid);
+      margin-bottom: 24px;
+    }
+
+    .feedback-pair-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .mini-preview-card {
+      background: var(--white);
+      border: 1.5px solid var(--teal-pale);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      min-width: 120px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .mini-preview-emoji {
+      font-size: 1.8rem;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .mini-preview-name {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .preview-link-arrow {
+      color: var(--teal);
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    /* ══════════════════════════════════════
+    SUCCESS FEEDBACK SPECIFIC STYLES
+    ══════════════════════════════════════ */
+    .feedback-card-success {
+      background: var(--cream-light);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 40px;
+      max-width: 850px;
+      width: 90%;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(30px);
+      transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+      position: relative;
+      overflow: hidden;
+      display: none;
+    }
+
+    .feedback-overlay.show .feedback-card-success {
+      transform: translateY(0);
+    }
+
+    .success-layout-container {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 32px;
+      width: 100%;
+      align-items: end;
+    }
+
+    .success-left-column {
+      display: flex;
+      align-items: flex-end;
+      gap: 16px;
+      position: relative;
+    }
+
+    .success-avatar-container {
+      width: 110px;
+      height: 110px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      position: relative;
+    }
+
+    .success-avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 16px rgba(30, 107, 94, 0.15));
+      animation: charFloat 4s ease-in-out infinite;
+    }
+
+    .speech-bubble-success {
+      position: relative;
+      background: var(--white);
+      border: 1.5px solid rgba(208, 199, 185, 0.6);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      box-shadow: var(--shadow-sm);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: left;
+      margin-bottom: 10px;
+    }
+
+    /* Tail pointing bottom-left */
+    .speech-bubble-success::after {
+      content: '';
+      position: absolute;
+      left: -9px;
+      bottom: 20px;
+      width: 16px;
+      height: 16px;
+      background: var(--white);
+      border-left: 1.5px solid rgba(208, 199, 185, 0.6);
+      border-bottom: 1.5px solid rgba(208, 199, 185, 0.6);
+      transform: rotate(45deg);
+    }
+
+    .speech-bubble-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--teal);
+    }
+
+    .speech-bubble-text {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: var(--text-mid);
+    }
+
+    .speech-bubble-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .success-right-column {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100%;
+    }
+
+    .success-cards-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .success-preview-card {
+      background: var(--white);
+      border: 1.5px solid var(--teal-pale);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+
+    .success-preview-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--teal-light);
+    }
+
+    .success-preview-img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      border-radius: var(--radius-sm);
+      background: var(--cream-light);
+      padding: 4px;
+      border: 1px solid rgba(208, 199, 185, 0.3);
+    }
+
+    .success-preview-details {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-align: left;
+    }
+
+    .success-preview-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: var(--text-light);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .success-preview-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    /* ══════════════════════════════════════
+   END SCREEN
+   ══════════════════════════════════════ */
+    .end-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--cream);
+      z-index: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease, visibility 0.5s;
+      padding: 20px;
+    }
+
+    .end-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .end-container {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(208, 199, 185, 0.5);
+      box-shadow: var(--shadow-lg);
+      padding: 60px;
+      max-width: 900px;
+      width: 100%;
+      display: flex;
+      gap: 48px;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .end-left {
+      flex: 1;
+    }
+
+    .end-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-bottom: 12px;
+    }
+
+    .end-title {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--text-dark);
+      line-height: 1.1;
+      margin-bottom: 18px;
+    }
+
+    .end-title em {
+      font-style: italic;
+      color: var(--teal);
+    }
+
+    .end-desc {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--text-mid);
+      margin-bottom: 32px;
+    }
+
+    .end-right {
+      flex: 0 0 300px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .end-character-img {
+      width: 100%;
+      max-height: 380px;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 24px rgba(30, 107, 94, 0.2));
+      animation: charFloat 4s ease-in-out infinite;
+    }
+
+    /* ══════════════════════════════════════
+   RESPONSIVE DESIGN
+   ══════════════════════════════════════ */
+    @media (max-width: 992px) {
+      .intro-card {
+        flex-direction: column;
+        padding: 32px;
+        gap: 24px;
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      .character-section {
+        flex: none;
+        width: 140px;
+      }
+
+      .character-img {
+        max-height: 200px;
+      }
+
+      .character-section::after {
+        width: 100px;
+      }
+
+      .dialogue-bubble::after {
+        left: 50%;
+        top: -12px;
+        transform: translateX(-50%) rotate(45deg);
+        border-left: 1px solid rgba(208, 199, 185, 0.5);
+        border-top: 1px solid rgba(208, 199, 185, 0.5);
+        border-right: none;
+        border-bottom: none;
+      }
+
+      .end-container {
+        flex-direction: column;
+        padding: 40px;
+        gap: 32px;
+        text-align: center;
+      }
+
+      .end-right {
+        flex: none;
+        width: 180px;
+      }
+
+      .end-actions {
+        justify-content: center;
+      }
+
+      .success-layout-container {
+        gap: 20px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .site-header {
+        padding: 12px 20px;
+      }
+
+      .progress-track {
+        width: 120px;
+      }
+
+      .game-main-header {
+        padding: 20px;
+      }
+
+      .game-heading {
+        font-size: 1.6rem;
+      }
+
+      .cards-container {
+        padding: 20px;
+      }
+
+      .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .game-card {
+        min-height: 200px;
+      }
+
+      .card-visual {
+        font-size: 2.2rem;
+      }
+
+      .game-action-bar {
+        padding: 16px 20px;
+      }
+
+      .btn {
+        padding: 12px 20px;
+        font-size: 0.8rem;
+      }
+
+      .feedback-card {
+        flex-direction: column;
+        padding: 32px;
+        gap: 24px;
+        text-align: center;
+      }
+
+      .feedback-char-section {
+        flex: none;
+        width: 120px;
+      }
+
+      .feedback-char-img {
+        max-height: 160px;
+      }
+
+      .feedback-card-success {
+        padding: 24px;
+        width: 95%;
+      }
+
+      .success-layout-container {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        align-items: center;
+      }
+
+      .success-left-column {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+      }
+
+      .success-avatar-container {
+        width: 100px;
+        height: 100px;
+      }
+
+      .speech-bubble-success {
+        margin-left: 0;
+        margin-bottom: 0;
+        width: 100%;
+      }
+
+      .speech-bubble-success::after {
+        left: 50%;
+        top: -9px;
+        bottom: auto;
+        transform: translateX(-50%) rotate(45deg);
+        border-left: 1.5px solid rgba(208, 199, 185, 0.6);
+        border-top: 1.5px solid rgba(208, 199, 185, 0.6);
+        border-right: none;
+        border-bottom: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Background shapes -->
+  <div class="bg-shape-1"></div>
+  <div class="bg-shape-2"></div>
+
+  <!-- Drawing and Decorations SVG overlays -->
+  <svg id="drawing-area">
+    <path id="connecting-line" d=""></path>
+  </svg>
+  <svg id="decorations-area"></svg>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <a href="index.html" class="logo">
+      <span class="logo-dot"></span>
+      STK Architecture
+    </a>
+
+    <div class="progress-container">
+      <div class="progress-info">
+        <span class="progress-label">Stabilité du projet</span>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+      <span class="progress-pct" id="progress-pct">0%</span>
+    </div>
+  </header>
+
+  <div class="game-layout">
+    <!-- MAIN GAME AREA -->
+    <main class="game-main">
+      <div class="game-main-header">
+        <div class="game-title-area">
+          <span class="game-tag" id="game-subtitle-tag">Exploration active</span>
+          <h2 class="game-heading" id="game-enigma-title">L'Énigme du <em>Biomimétisme</em></h2>
+        </div>
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div class="game-stats">
+            Paires trouvées : <strong id="pairs-found">0</strong> / <strong id="pairs-total">8</strong>
+          </div>
+          <button class="btn btn-secondary" style="padding: 10px 16px; border-radius: var(--radius-sm);"
+            onclick="showRulesPopup(); return false;">
+            Règles
+          </button>
+        </div>
+      </div>
+
+      <div class="cards-container">
+        <div class="cards-grid" id="cards-grid">
+          <!-- Generated by JS -->
+        </div>
+      </div>
+
+      <!-- Action Bar -->
+      <div class="game-action-bar">
+        <button class="btn btn-secondary" id="btn-cancel" onclick="cancelSelection()" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+          Désélectionner
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <!-- ══════════════════════════════════════
+   INTRO OVERLAY (ÉLÉNA DIALOGUES)
+   ══════════════════════════════════════ -->
+  <div class="intro-overlay" id="intro-overlay">
+    <div class="intro-card">
+      <div class="character-section">
+        <img src="image/avatar/Open Peeps - Standing (5) 1.png" alt="Éléna" class="character-img" id="intro-char-img">
+      </div>
+
+      <div class="dialogue-section">
+        <span class="dialogue-badge">Éléna • STK Studio</span>
+
+        <div class="dialogue-bubble">
+          <h3 class="dialogue-title" id="intro-title">Bonjour !</h3>
+          <div class="dialogue-text" id="intro-text">
+            Je suis Éléna, votre guide pour cette aventure biophilique. Ensemble, nous allons concevoir des structures
+            durables en harmonie avec la nature.
+          </div>
+        </div>
+
+        <div class="dialogue-actions">
+          <button class="btn btn-primary" id="btn-intro-next" onclick="nextIntroStep()">
+            Suivant
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+   FEEDBACK OVERLAY
+   ══════════════════════════════════════ -->
+  <div class="feedback-overlay" id="feedback-overlay">
+    <!-- Card Normal (Errors & Level Transitions) -->
+    <div class="feedback-card" id="feedback-card-normal">
+      <div class="feedback-char-section">
+        <img src="image/avatar/media__1779403324861.png" alt="Éléna" class="feedback-char-img-el feedback-char-img"
+          id="feedback-char-img">
+      </div>
+      <div class="feedback-content-section">
+        <span class="feedback-icon-el feedback-icon" id="feedback-icon">✅</span><br>
+        <span class="feedback-badge-el feedback-badge success" id="feedback-badge">Association Correcte</span>
+        <h3 class="feedback-title-el feedback-title" id="feedback-title">Bravo !</h3>
+
+        <div class="feedback-pair-preview-el feedback-pair-preview" id="feedback-pair-preview" style="display: none;">
+          <!-- Generated in JS -->
+        </div>
+
+        <p class="feedback-text-el feedback-text" id="feedback-text"></p>
+
+        <button class="btn btn-primary feedback-btn-el" id="feedback-btn">
+          <span class="feedback-btn-text-el" id="feedback-btn-text">Continuer l'exploration</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Card Success (Correct Answers) -->
+    <div class="feedback-card-success" id="feedback-card-success" style="display: none;">
+      <div class="success-layout-container">
+
+        <!-- Left: Elena avatar + speech bubble -->
+        <div class="success-left-column">
+          <div class="success-avatar-container">
+            <img src="image/avatar/media__1779403324861.png" alt="Éléna" class="feedback-char-img-el success-avatar-img">
+          </div>
+
+          <div class="speech-bubble-success">
+            <span class="feedback-badge-el speech-bubble-badge">Éléna • STK Studio</span>
+            <!-- Hidden elements for test compatibility/JS lookup -->
+            <span class="feedback-icon-el" style="display: none;">✅</span>
+            <h3 class="feedback-title-el" style="display: none;">Bravo !</h3>
+
+            <p class="feedback-text-el speech-bubble-text"></p>
+
+            <div class="speech-bubble-actions">
+              <button class="btn btn-primary feedback-btn-el">
+                <span class="feedback-btn-text-el">Continuer l'exploration</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Stacked Cards -->
+        <div class="success-right-column">
+          <div class="feedback-pair-preview-el success-cards-stack">
+            <!-- Generated in JS -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+   END SCREEN
+   ══════════════════════════════════════ -->
+  <div class="end-overlay" id="end-overlay">
+    <div class="end-container">
+      <div class="end-left">
+        <span class="end-tag">Félicitations</span>
+        <h2 class="end-title">Projet <em>Séquoia</em> Stabilisé !</h2>
+        <p class="end-desc">Incroyable ! Grâce à votre compréhension fine des analogies biologiques, les structures du
+          Séquoia Millénaire reposent désormais sur des bases biophiliques robustes. La nature et la technique ne font
+          plus qu'un.</p>
+
+        <div class="end-actions" style="display:flex; gap:16px;">
+          <button class="btn btn-primary" onclick="restartGame()">
+            Rejouer
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="end-right">
+        <img src="image/avatar/Open Peeps - Standing (5) 1.png" alt="Éléna - Félicitations" class="end-character-img">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ══════════════════════════════════════
+    // GAME DATABASE — 3 Levels, 21 Pairs
+    // ══════════════════════════════════════
+    const DATABASE = {
+      1: {
+        title: "Set 1 : Stabilité structurelle",
+        pairs: [
+          {
+            id: "nautile",
+            nature: { name: "Nautile", image: "image/nautile.png" },
+            techno: { name: "Turbo Moteur", image: "image/turbo moteur.png" },
+            explanation: "La coquille en spirale logarithmique du nautile a inspiré des conceptions de turbines et de ventilateurs industriels extrêmement efficaces. En suivant la géométrie naturelle de la spirale, le concepteur Jay Harman a créé des hélices et rotors qui réduisent la consommation d'énergie jusqu'à 30% et le bruit de façon spectaculaire."
+          },
+          {
+            id: "bardane",
+            nature: { name: "Bardane", image: "image/bardane.png" },
+            techno: { name: "Velcro", image: "image/velkro.png" },
+            explanation: "En 1941, George de Mestral remarque des fruits de bardane accrochés aux poils de son chien. Sous microscope, il observe des centaines de petits crochets flexibles capables de s'agripper aux boucles du tissu. C'est la naissance du Velcro (Velours-Crochets), une invention aujourd'hui universelle."
+          },
+          {
+            id: "moustique",
+            nature: { name: "Moustique", image: "image/moustique.png" },
+            techno: { name: "Aiguille", image: "image/aiguille.png" },
+            explanation: "Le moustique pique sans douleur grâce à sa trompe ultra-fine dotée de micro-dentelures qui réduisent le contact avec les nerfs sensoriels. Les ingénieurs s'en sont inspirés pour concevoir des aiguilles médicales presque indolores, idéales pour les patients diabétiques."
+          },
+          {
+            id: "termitiere",
+            nature: { name: "Termitière", image: "image/termitiere.png" },
+            techno: { name: "Eastgate", image: "image/eastgate.png" },
+            explanation: "Les termitières régulent leur température interne grâce à un réseau de cheminées de ventilation passive. L'architecte Mick Pearce s'est inspiré de ce système pour concevoir le centre commercial Eastgate au Zimbabwe, qui se refroidit sans climatisation artificielle et consomme 90% d'énergie en moins."
+          },
+          {
+            id: "martin_pecheur",
+            nature: { name: "Martin-pêcheur", image: "image/Martin pêcheur.png" },
+            techno: { name: "Shinkansen", image: "image/shinkansen.png" },
+            explanation: "Le nez aérodynamique du train à grande vitesse japonais Shinkansen est inspiré du bec du martin-pêcheur, qui plonge dans l'eau sans créer de vagues. Ce profil réduit le bang sonore à la sortie des tunnels, augmente la vitesse de 10% et diminue la consommation d'énergie de 15%."
+          },
+          {
+            id: "gecko",
+            nature: { name: "Gecko", image: "image/gekko.png" },
+            techno: { name: "Geckskin", image: "image/adhésif.png" },
+            explanation: "Le gecko grimpe sur les vitres grâce aux forces de Van der Waals, générées par des milliards de poils microscopiques (setae) sous ses pattes. Les chercheurs ont reproduit cette structure sèche et réutilisable pour concevoir l'adhésif Geckskin, capable de soutenir de lourdes charges sans colle."
+          },
+          {
+            id: "baleine",
+            nature: { name: "Baleine", image: "image/baleine.png" },
+            techno: { name: "Éolienne", image: "image/éolienne.png" },
+            explanation: "Les bosses (tubercules) situées sur la tranche avant des nageoires pectorales de la baleine à bosse créent des micro-tourbillons qui améliorent sa portance et sa maniabilité. Cette morphologie a été transposée sur les pales d'éoliennes pour accroître leur efficacité et leur permettre de tourner par vent faible."
+          }
+        ]
+      },
+      2: {
+        title: "Set 2 : Efficacité énergétique",
+        pairs: [
+          {
+            id: "luciole",
+            nature: { name: "Luciole", image: "image/luciole.png" },
+            techno: { name: "LED", image: "image/led.png" },
+            explanation: "La lanterne des lucioles possède des micro-écailles imbriquées en forme de tuiles qui maximisent la diffusion de la lumière produite par bioluminescence. En reproduisant ces motifs à la surface des ampoules LED, des physiciens ont augmenté leur efficacité lumineuse de 55%."
+          },
+          {
+            id: "papillon_nuit",
+            nature: { name: "Papillon de nuit", image: "image/papillon.png" },
+            techno: { name: "Verre anti-reflet", image: "image/verre anti reflet.png" },
+            explanation: "Les yeux des papillons de nuit ne reflètent pas la lumière grâce à une nanostructure anti-reflet qui leur permet d'échapper aux prédateurs dans l'obscurité. Cette structure a inspiré la création de revêtements anti-reflets performants pour les lunettes, les écrans de smartphone et les panneaux photovoltaïques."
+          },
+          {
+            id: "requin",
+            nature: { name: "Requin", image: "image/requin.png" },
+            techno: { name: "Combinaison", image: "image/combinaison.png" },
+            explanation: "La peau des requins est recouverte de denticules dermiques, de petites écailles striées qui réduisent la traînée dans l'eau et empêchent les bactéries de s'y fixer. Ce relief a inspiré des combinaisons de natation olympiques ultra-rapides et des revêtements antibactériens pour les hôpitaux."
+          },
+          {
+            id: "cicatrisation",
+            nature: { name: "Cicatrisation", image: "image/cicatrice.png" },
+            techno: { name: "Béton auto-cicatrisant", image: "image/béton heal.png" },
+            explanation: "Inspiré par la capacité d'auto-guérison des tissus vivants, le béton auto-cicatrisant intègre des micro-capsules contenant des bactéries endormies et des nutriments. Lorsque des fissures apparaissent et laissent entrer l'eau, les bactéries s'activent et produisent du calcaire pour reboucher les brèches automatiquement."
+          },
+          {
+            id: "coleoptere_desert",
+            nature: { name: "Coléoptère", image: "image/coléoptère.png" },
+            techno: { name: "Filet capteur de rosée", image: "image/fillet capteur de rosé.png" },
+            explanation: "Le coléoptère du désert de Namibie survit en capturant l'eau du brouillard sur sa carapace composée de zones hydrophiles et hydrophobes. Ce principe a inspiré la conception de filets capteurs de rosée (filets Warka) installés dans les régions arides pour fournir de l'eau potable aux populations locales."
+          },
+          {
+            id: "corail",
+            nature: { name: "Corail", image: "image/corail.png" },
+            techno: { name: "Béton zéro carbone", image: "image/zero carbone.png" },
+            explanation: "Les coraux fabriquent leur squelette calcaire en capturant le CO2 dissous dans l'eau de mer. Des entreprises s'en inspirent pour produire du béton de manière écologique en captant les émissions industrielles de CO2 pour les séquestrer sous forme de carbonate de calcium solide."
+          },
+          {
+            id: "corbeille_venus",
+            nature: { name: "Corbeille de Vénus", image: "image/corbeille de vénus.png" },
+            techno: { name: "30 St mary", image: "image/30 St mary.png" },
+            explanation: "La corbeille de Vénus (une éponge de verre marine) possède un squelette siliceux en treillis cylindrique renforcé par des contreforts diagonaux d'une robustesse exceptionnelle. L'architecte Norman Foster s'en est inspiré pour la structure externe en résille du gratte-ciel 30 St Mary Axe (le Gherkin) à Londres."
+          }
+        ]
+      },
+      3: {
+        title: "Set 3 : Innovations avancées",
+        pairs: [
+          {
+            id: "lotus_hydrophobe",
+            nature: { name: "Lotus", image: "image/lotus.png" },
+            techno: { name: "Surface hydrophobe", image: "image/surface hydrophobe.png" },
+            explanation: "Les feuilles de lotus possèdent une rugosité microscopique recouverte de cire qui empêche l'eau d'y adhérer. Les gouttes d'eau glissent instantanément en emportant les poussières. Cette propriété super-hydrophobe a inspiré des peintures de façade autonettoyantes (Lotusan) et des textiles antitaches."
+          },
+          {
+            id: "manchot",
+            nature: { name: "Manchot", image: "image/manchot.png" },
+            techno: { name: "Éco-district", image: "image/District.png" },
+            explanation: "Les manchots survivent aux températures polaires extrêmes en se regroupant en cercle serré (la tortue), se relayant régulièrement entre le centre chaud et la périphérie exposée au vent gelé. Cette gestion collective et partagée des ressources thermiques inspire le réseau de chauffage intelligent de certains éco-districts."
+          },
+          {
+            id: "moule",
+            nature: { name: "Moule", image: "image/moule.png" },
+            techno: { name: "Colle sous-marine", image: "image/colle glue.png" },
+            explanation: "Les moules sécrètent une protéine adhésive riche en acides aminés (le byssus) qui leur permet d'accrocher fermement aux rochers battus par les vagues. Cette colle naturelle et non toxique a inspiré le développement d'adhésifs chirurgicaux sous-marins et de colles écologiques pour l'industrie du bois."
+          },
+          {
+            id: "zebre_dazzle",
+            nature: { name: "Zèbre", image: "image/zèbre.png" },
+            techno: { name: "Camouflage Dazzle", image: "image/CAMOUFLAGE.png" },
+            explanation: "Les rayures contrastées du zèbre perturbent la vision des prédateurs et des insectes en créant une illusion d'optique sur la vitesse et la direction de sa course. Ce principe de camouflage disruptif (\"Dazzle\") a été adopté lors de la Première Guerre mondiale pour peindre les navires et tromper les sous-marins ennemis."
+          },
+          {
+            id: "os_tour_eiffel",
+            nature: { name: "Os", image: "image/os.png" },
+            techno: { name: "Tour Eiffel", image: "image/tour-eiffel.png" },
+            explanation: "La structure interne de la tête du fémur humain est composée d'un réseau de travées osseuses alignées avec précision selon les forces de compression et de tension exercées sur l'os. Gustave Eiffel a exploité ces mêmes principes d'ingénierie mécanique pour concevoir la charpente métallique légère et ultrarésistante de sa célèbre tour."
+          },
+          {
+            id: "aile_papillon",
+            nature: { name: "Aile de papillon", image: "image/aile de papillon.png" },
+            techno: { name: "Panneau solaire", image: "image/panel.png" },
+            explanation: "Les ailes du papillon noir Rose de Bornéo sont structurées avec des nanotrous qui piègent la lumière du soleil sous tous les angles pour réchauffer son corps à l'ombre. Cette structure photonique a été imitée pour concevoir des panneaux solaires en silicium noir capables d'absorber jusqu'à deux fois plus de lumière."
+          },
+          {
+            id: "orchidee",
+            nature: { name: "Orchidée", image: "image/orchidée.png" },
+            techno: { name: "Supertrees", image: "image/garden.png" },
+            explanation: "Les orchidées épiphytes poussent sur d'autres plantes en absorbant l'eau et les nutriments de l'air ambiant grâce à leurs racines aériennes adaptées. Les structures artificielles \"Supertrees\" de Singapour reproduisent cette symbiose verticale en accueillant des plantes grimpantes, en récupérant l'eau de pluie et en abritant des cellules photovoltaïques."
+          }
+        ]
+      }
+    };
+
+    // Error dialogue responses from Éléna
+    const ERROR_MESSAGES = [
+      { title: "Pas tout à fait !", text: "La nature a peaufiné ces liens pendant des millions d'années. Regardez de plus près : comment cette spécificité naturelle résout-elle ce problème technique ?" },
+      { title: "Une fausse piste !", text: "L'analogie est séduisante, mais scientifiquement incorrecte. Réessayez en vous concentrant sur la fonction pure de chaque élément." },
+      { title: "L'évolution demande du temps...", text: "Ne vous découragez pas ! Même les plus grands biophysiciens font des erreurs. Quel rapport structurel lie le physique de cet animal ou cette plante à nos objets ?" },
+      { title: "Presque, mais non !", text: "Ces deux cartes ont des univers proches, mais ce ne sont pas les bonnes. Essayez d'associer un comportement ou une forme similaire." }
+    ];
+
+    // Avatars for feedback popups (correct / incorrect)
+    const FEEDBACK_AVATARS = [
+      "image/avatar/media__1779403324861.png",
+      "image/avatar/media__1779403330408.png",
+      "image/avatar/media__1779403336642.png",
+      "image/avatar/media__1779403342068.png",
+      "image/avatar/media__1779403350004.png"
+    ];
+    let pairAvatars = {};
+
+    function initPairAvatars() {
+      pairAvatars = {};
+      const allPairIds = [];
+      for (let lvl in DATABASE) {
+        DATABASE[lvl].pairs.forEach(pair => {
+          allPairIds.push(pair.id);
+        });
+      }
+
+      let avatarPool = [];
+      allPairIds.forEach(pairId => {
+        if (avatarPool.length === 0) {
+          avatarPool = [...FEEDBACK_AVATARS].sort(() => Math.random() - 0.5);
+        }
+        pairAvatars[pairId] = avatarPool.pop();
+      });
+    }
+
+    // Game state variables
+    let currentLevel = 1;
+    let selectedCards = [];
+    let matchedPairs = [];
+    let allCards = [];
+    let introStep = 1;
+    let errorMsgIndex = 0;
+    let isChecking = false;
+    let matchedThisTurn = [];
+    let startX = 0;
+    let startY = 0;
+
+    const connectionLine = document.getElementById('connecting-line');
+    const decorationsArea = document.getElementById('decorations-area');
+
+    // Initialize on load
+    document.addEventListener("DOMContentLoaded", () => {
+      initGame();
+    });
+
+    // Start & Reset Game
+    function initGame() {
+      initPairAvatars();
+      currentLevel = 1;
+      selectedCards = [];
+      matchedPairs = [];
+      introStep = 1;
+      errorMsgIndex = 0;
+      isChecking = false;
+
+      // Prepare introduction overlay
+      const introOverlay = document.getElementById("intro-overlay");
+      const introChar = document.getElementById("intro-char-img");
+      const introTitle = document.getElementById("intro-title");
+      const introText = document.getElementById("intro-text");
+      const btnNext = document.getElementById("btn-intro-next");
+
+      introOverlay.classList.remove("hidden");
+      introChar.src = "image/avatar/Open Peeps - Standing (5) 1.png"; // Smiling Éléna
+      introTitle.textContent = "Bonjour !";
+      introText.innerHTML = "Je suis Éléna, votre guide pour cette aventure biophilique. Ensemble, nous allons concevoir des structures durables en harmonie avec le vivant.";
+      btnNext.innerHTML = 'Suivant <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+
+      // Hide end overlay
+      document.getElementById("end-overlay").classList.remove("show");
+
+      loadLevel(1);
+    }
+
+    // Load active level
+    function loadLevel(level) {
+      currentLevel = level;
+      matchedPairs = [];
+      selectedCards = [];
+      isChecking = false;
+
+      // Clear any remaining decorations from previous level completion
+      decorationsArea.innerHTML = '';
+      decorationsArea.style.opacity = '1';
+      decorationsArea.style.transition = '';
+
+      // Update UI headings
+      const levelData = DATABASE[level];
+      document.getElementById("game-subtitle-tag").textContent = levelData.title;
+      document.getElementById("game-enigma-title").innerHTML = "L'Énigme du <em>Biomimétisme</em>";
+
+      // Generate cards for the active level
+      generateCardsForLevel(level);
+
+      // Render cards to container
+      renderCards();
+
+      // Update progress bar
+      updateProgressBar();
+
+      // Disable cancel button
+      document.getElementById("btn-cancel").disabled = true;
+    }
+
+    // Generate cards data with scattered coordinates
+    function generateCardsForLevel(level) {
+      allCards = [];
+      const pairs = DATABASE[level].pairs;
+
+      pairs.forEach(pair => {
+        // Nature card
+        allCards.push({
+          pairId: pair.id,
+          side: 'nature',
+          name: pair.nature.name,
+          image: pair.nature.image
+        });
+        // Techno card
+        allCards.push({
+          pairId: pair.id,
+          side: 'techno',
+          name: pair.techno.name,
+          image: pair.techno.image
+        });
+      });
+
+      // Shuffle cards
+      allCards.sort(() => Math.random() - 0.5);
+
+      // Assign grid rows and columns (5-4-5 layout)
+      const rowCounts = [5, 4, 5];
+      let cardIdx = 0;
+      rowCounts.forEach((cols, rowIndex) => {
+        for (let colIndex = 0; colIndex < cols; colIndex++) {
+          if (cardIdx < allCards.length) {
+            allCards[cardIdx].rowIndex = rowIndex;
+            allCards[cardIdx].colIndex = colIndex;
+            // random offsets between -0.75 and 0.75
+            allCards[cardIdx].offsetX = (Math.random() * 2 - 1) * 0.75;
+            allCards[cardIdx].offsetY = (Math.random() * 2 - 1) * 0.75;
+            // random rotation between -6 and 6 degrees
+            allCards[cardIdx].rotation = (Math.random() * 2 - 1) * 6;
+            cardIdx++;
+          }
+        }
+      });
+    }
+
+    // Render cards list in DOM
+    function renderCards() {
+      const grid = document.getElementById("cards-grid");
+      grid.innerHTML = "";
+
+      allCards.forEach((card, index) => {
+        const cardEl = document.createElement("div");
+        cardEl.className = "card";
+        cardEl.style.backgroundImage = `url('${card.image}')`;
+        cardEl.style.setProperty('--rand-rot', `${card.rotation}deg`);
+        cardEl.dataset.pairId = card.pairId;
+        cardEl.dataset.side = card.side;
+
+        // Click handler
+        cardEl.addEventListener("click", () => handleCardClick(index, cardEl));
+
+        grid.appendChild(cardEl);
+      });
+
+      // Position the cards relative to current grid size
+      positionCards();
+    }
+
+    // Reposition cards on resize or initial render
+    function positionCards() {
+      const container = document.getElementById('cards-grid');
+      const cards = Array.from(container.querySelectorAll('.card'));
+      if (cards.length === 0) return;
+
+      const rect = container.getBoundingClientRect();
+      const containerW = rect.width || window.innerWidth;
+      const containerH = rect.height || (window.innerHeight - 300);
+
+      // Responsive card width / height
+      let cardW = 130;
+      let cardH = 194;
+
+      if (containerW < 600) {
+        cardW = 85;
+        cardH = 127;
+      } else if (containerW < 900) {
+        cardW = 110;
+        cardH = 164;
+      }
+
+      // Add a safety margin to prevent cards from touching/bleeding out of boundaries
+      const marginX = 20;
+      const marginY = 20;
+      const usableW = containerW - (2 * marginX);
+      const usableH = containerH - (2 * marginY);
+
+      const rowCounts = [5, 4, 5];
+      const rowsCount = rowCounts.length;
+      const cellH = usableH / rowsCount;
+
+      cards.forEach((card, index) => {
+        const cardData = allCards[index];
+        if (!cardData) return;
+
+        const rowIndex = cardData.rowIndex;
+        const colIndex = cardData.colIndex;
+        const offsetX = cardData.offsetX;
+        const offsetY = cardData.offsetY;
+
+        const cols = rowCounts[rowIndex];
+        const cellW = usableW / cols;
+
+        // Base position within the usable container area
+        let baseX = marginX + (colIndex * cellW) + (cellW - cardW) / 2;
+        let baseY = marginY + (rowIndex * cellH) + (cellH - cardH) / 2;
+
+        // Max offsets
+        const maxOffsetX = Math.max(0, (cellW - cardW) / 2 - 10);
+        const maxOffsetY = Math.max(0, (cellH - cardH) / 2 - 10);
+
+        const left = baseX + offsetX * maxOffsetX;
+        const top = baseY + offsetY * maxOffsetY;
+
+        card.style.width = `${cardW}px`;
+        card.style.height = `${cardH}px`;
+        card.style.left = `${left}px`;
+        card.style.top = `${top}px`;
+      });
+    }
+
+    // Handle card click events
+    function handleCardClick(index, cardEl) {
+      if (isChecking) return;
+      if (cardEl.classList.contains('matched')) return;
+
+      const card = allCards[index];
+
+      // If clicked the already active card, deselect
+      if (cardEl.classList.contains('active')) {
+        cancelSelection();
+        return;
+      }
+
+      if (selectedCards.length >= 2) return;
+
+      cardEl.classList.add("active");
+      selectedCards.push({ index, card, element: cardEl });
+
+      if (selectedCards.length === 1) {
+        const rect = cardEl.getBoundingClientRect();
+        startX = rect.left + rect.width / 2;
+        startY = rect.top + rect.height / 2;
+
+        connectionLine.setAttribute('d', generateSimpleWavyPath(startX, startY, startX, startY));
+        connectionLine.classList.remove('success', 'error');
+        connectionLine.classList.add('tracking');
+        connectionLine.style.strokeWidth = '4';
+
+        document.getElementById("btn-cancel").disabled = false;
+        document.getElementById("game-subtitle-tag").textContent = "Recherche d'association";
+        document.getElementById("game-enigma-title").innerHTML = `Associer <em>${card.name}</em> avec...`;
+      }
+
+      if (selectedCards.length === 2) {
+        isChecking = true;
+
+        const rect2 = cardEl.getBoundingClientRect();
+        const endX = rect2.left + rect2.width / 2;
+        const endY = rect2.top + rect2.height / 2;
+
+        connectionLine.setAttribute('d', generateSimpleWavyPath(startX, startY, endX, endY));
+
+        if (selectedCards[0].card.pairId === selectedCards[1].card.pairId) {
+          connectionLine.style.strokeWidth = '16';
+        } else {
+          connectionLine.style.strokeWidth = '2';
+        }
+
+        setTimeout(validateSelectedPair, 700);
+      }
+    }
+
+    // Cancel current selection
+    function cancelSelection() {
+      if (isChecking) return;
+      if (selectedCards.length > 0) {
+        selectedCards.forEach(item => {
+          item.element.classList.remove("active");
+        });
+        selectedCards = [];
+      }
+      resetBoard();
+      document.getElementById("btn-cancel").disabled = true;
+      document.getElementById("game-subtitle-tag").textContent = DATABASE[currentLevel].title;
+      document.getElementById("game-enigma-title").innerHTML = "L'Énigme du <em>Biomimétisme</em>";
+    }
+
+    // Validate active pair selection
+    function validateSelectedPair() {
+      if (selectedCards.length !== 2) return;
+
+      const [first, second] = selectedCards;
+      const isCorrect = (first.card.pairId === second.card.pairId) && (first.card.side !== second.card.side);
+
+      if (isCorrect) {
+        connectionLine.classList.remove('tracking');
+        connectionLine.classList.add('success');
+
+        matchedPairs.push(first.card.pairId);
+        matchedThisTurn = [first, second];
+
+        updateProgressBar();
+
+        const pairInfo = DATABASE[currentLevel].pairs.find(p => p.id === first.card.pairId);
+        showSuccessFeedback(pairInfo);
+      } else {
+        connectionLine.classList.remove('tracking');
+        connectionLine.classList.add('error');
+
+        first.element.classList.add("error");
+        second.element.classList.add("error");
+
+        const errorDetails = ERROR_MESSAGES[errorMsgIndex % ERROR_MESSAGES.length];
+        errorMsgIndex++;
+
+        const failedPairId = first.card.pairId;
+
+        setTimeout(() => {
+          first.element.classList.remove("error", "active");
+          second.element.classList.remove("error", "active");
+          selectedCards = [];
+          document.getElementById("btn-cancel").disabled = true;
+          document.getElementById("game-subtitle-tag").textContent = DATABASE[currentLevel].title;
+          document.getElementById("game-enigma-title").innerHTML = "L'Énigme du <em>Biomimétisme</em>";
+          showErrorFeedback(errorDetails, failedPairId);
+        }, 600);
+      }
+    }
+
+    // Reset board line state
+    function resetBoard() {
+      selectedCards = [];
+      isChecking = false;
+      connectionLine.classList.remove('tracking', 'success', 'error');
+      connectionLine.setAttribute('d', '');
+    }
+
+    // Update progress bars & count stats
+    function updateProgressBar() {
+      const currentFound = matchedPairs.length;
+      document.getElementById("pairs-found").textContent = currentFound;
+      document.getElementById("pairs-total").textContent = 7;
+
+      const globalTotal = 21;
+      const globalFound = ((currentLevel - 1) * 7) + currentFound;
+      const globalPct = Math.round((globalFound / globalTotal) * 100);
+
+      document.getElementById("progress-fill").style.width = `${globalPct}%`;
+      document.getElementById("progress-pct").textContent = `${globalPct}%`;
+    }
+
+    function setActiveFeedbackCard(cardType) {
+      const cardNormal = document.getElementById("feedback-card-normal");
+      const cardSuccess = document.getElementById("feedback-card-success");
+
+      let activeCard, inactiveCard;
+      if (cardType === "success") {
+        activeCard = cardSuccess;
+        inactiveCard = cardNormal;
+        cardSuccess.style.display = "block";
+        cardNormal.style.display = "none";
+      } else {
+        activeCard = cardNormal;
+        inactiveCard = cardSuccess;
+        cardNormal.style.display = "flex";
+        cardSuccess.style.display = "none";
+      }
+
+      const mappings = [
+        { classSuffix: "char-img-el", id: "feedback-char-img" },
+        { classSuffix: "icon-el", id: "feedback-icon" },
+        { classSuffix: "badge-el", id: "feedback-badge" },
+        { classSuffix: "title-el", id: "feedback-title" },
+        { classSuffix: "pair-preview-el", id: "feedback-pair-preview" },
+        { classSuffix: "text-el", id: "feedback-text" },
+        { classSuffix: "btn-el", id: "feedback-btn" },
+        { classSuffix: "btn-text-el", id: "feedback-btn-text" }
+      ];
+
+      mappings.forEach(m => {
+        const el = inactiveCard.querySelector(`.${m.classSuffix}`);
+        if (el) {
+          el.removeAttribute("id");
+        }
+      });
+
+      mappings.forEach(m => {
+        const el = activeCard.querySelector(`.${m.classSuffix}`);
+        if (el) {
+          el.setAttribute("id", m.id);
+        }
+      });
+    }
+
+    // Show Success Modal
+    function showSuccessFeedback(pairInfo) {
+      setActiveFeedbackCard("normal");
+
+      const overlay = document.getElementById("feedback-overlay");
+      const badge = document.getElementById("feedback-badge");
+      const icon = document.getElementById("feedback-icon");
+      const title = document.getElementById("feedback-title");
+      const text = document.getElementById("feedback-text");
+      const preview = document.getElementById("feedback-pair-preview");
+      const btn = document.getElementById("feedback-btn");
+      const charImg = document.getElementById("feedback-char-img");
+
+      // Set the specific avatar for this pair
+      charImg.src = pairAvatars[pairInfo.id] || FEEDBACK_AVATARS[0];
+
+      badge.textContent = "Association Correcte";
+      badge.className = "feedback-badge-el feedback-badge success";
+      icon.textContent = "✅";
+      title.innerHTML = `${pairInfo.nature.name} &times; ${pairInfo.techno.name}`;
+      text.textContent = pairInfo.explanation;
+
+      preview.innerHTML = `
+        <div class="mini-preview-card" style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <img src="${pairInfo.nature.image}" style="max-height: 80px; max-width: 80px; object-fit: contain; border-radius: 4px;" alt="${pairInfo.nature.name}">
+          <span class="mini-preview-name" style="font-size: 0.75rem; font-weight: 700; color: var(--text-dark);">${pairInfo.nature.name}</span>
+        </div>
+        <div class="preview-link-arrow" style="font-size: 1.5rem; color: var(--teal);">&harr;</div>
+        <div class="mini-preview-card" style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <img src="${pairInfo.techno.image}" style="max-height: 80px; max-width: 80px; object-fit: contain; border-radius: 4px;" alt="${pairInfo.techno.name}">
+          <span class="mini-preview-name" style="font-size: 0.75rem; font-weight: 700; color: var(--text-dark);">${pairInfo.techno.name}</span>
+        </div>
+      `;
+
+      const btnText = document.getElementById("feedback-btn-text");
+      if (btnText) btnText.textContent = "Continuer l'exploration";
+      btn.onclick = () => {
+        closeFeedback();
+        // Hide matched cards
+        const [first, second] = matchedThisTurn;
+        if (first && second) {
+          first.element.classList.add("matched");
+          second.element.classList.add("matched");
+          first.element.classList.remove("active");
+          second.element.classList.remove("active");
+        }
+        resetBoard();
+
+        // Check level completion
+        if (matchedPairs.length === 7) {
+          setTimeout(showLevelCompleteTransition, 500);
+        }
+      };
+
+      overlay.classList.add("show");
+    }
+
+    // Show Level Completion Transition
+    function showLevelCompleteTransition() {
+      setActiveFeedbackCard("normal");
+
+      const overlay = document.getElementById("feedback-overlay");
+      const badge = document.getElementById("feedback-badge");
+      const icon = document.getElementById("feedback-icon");
+      const title = document.getElementById("feedback-title");
+      const text = document.getElementById("feedback-text");
+      const preview = document.getElementById("feedback-pair-preview");
+      const btn = document.getElementById("feedback-btn");
+      const charImg = document.getElementById("feedback-char-img");
+
+      // Set smiling full standing Éléna for set completion
+      charImg.src = "image/avatar/Open Peeps - Standing (5) 1.png";
+
+      badge.textContent = "Set Complété !";
+      badge.className = "feedback-badge success";
+      icon.textContent = "🎉";
+      title.textContent = `Félicitations ! Set ${currentLevel} Terminé`;
+
+      if (currentLevel === 1) {
+        text.textContent = "Vous avez réussi à stabiliser le premier ensemble structurel de notre projet. Prêt à passer au Set 2 : Efficacité énergétique ?";
+        document.getElementById("feedback-btn-text").textContent = "Passer au Set 2";
+      } else if (currentLevel === 2) {
+        text.textContent = "Excellent travail ! Les systèmes énergétiques sont optimisés. Prêt à aborder le Set 3 : Innovations avancées ?";
+        document.getElementById("feedback-btn-text").textContent = "Passer au Set 3";
+      }
+
+      preview.innerHTML = ""; // No preview needed
+
+      btn.onclick = () => {
+        closeFeedback();
+        nextLevel();
+      };
+
+      spawnDecorations();
+      overlay.classList.add("show");
+    }
+
+    // Proceed to next level or final screen
+    function nextLevel() {
+      currentLevel++;
+      if (currentLevel > 3) {
+        showEndScreen();
+      } else {
+        loadLevel(currentLevel);
+      }
+    }
+
+    // Show Error Modal
+    function showErrorFeedback(errorDetails, failedPairId) {
+      setActiveFeedbackCard("normal");
+
+      const overlay = document.getElementById("feedback-overlay");
+      const badge = document.getElementById("feedback-badge");
+      const icon = document.getElementById("feedback-icon");
+      const title = document.getElementById("feedback-title");
+      const text = document.getElementById("feedback-text");
+      const preview = document.getElementById("feedback-pair-preview");
+      const btn = document.getElementById("feedback-btn");
+      const charImg = document.getElementById("feedback-char-img");
+
+      // Set avatar associated with the current connection attempt's pairId (or random fallback)
+      charImg.src = pairAvatars[failedPairId] || FEEDBACK_AVATARS[0];
+
+      badge.textContent = "Association Incorrecte";
+      badge.className = "feedback-badge error";
+      icon.textContent = "🤔";
+      title.textContent = errorDetails.title;
+      text.textContent = errorDetails.text;
+      preview.innerHTML = ""; // No preview
+
+      document.getElementById("feedback-btn-text").textContent = "Réessayer";
+      btn.onclick = () => {
+        closeFeedback();
+        resetBoard();
+      };
+
+      overlay.classList.add("show");
+    }
+
+    function closeFeedback() {
+      document.getElementById("feedback-overlay").classList.remove("show");
+      isChecking = false;
+    }
+
+    // Close feedback modal when clicking outside the card content
+    document.getElementById("feedback-overlay").addEventListener("click", function (e) {
+      if (e.target === this) {
+        document.getElementById("feedback-btn").click();
+      }
+    });
+
+    // Drawing wave path helpers
+    function generateSimpleWavyPath(x1, y1, x2, y2) {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const ctrl1X = x1 + dx * 0.2;
+      const ctrl1Y = y1 - 150;
+      const ctrl2X = x2 - dx * 0.2;
+      const ctrl2Y = y2 + 150;
+      return `M ${x1} ${y1} C ${ctrl1X} ${ctrl1Y}, ${ctrl2X} ${ctrl2Y}, ${x2} ${y2}`;
+    }
+
+    // Background decoration animations
+    function spawnDecorations() {
+      decorationsArea.innerHTML = '';
+      decorationsArea.style.opacity = '1';
+      decorationsArea.style.transition = '';
+      const colors = ['#1E6B5E', '#2D8E7D', '#B8D8D3', '#F5F0E8', '#f39c12', '#3498db', '#2ecc71'];
+      const thickness = '20px';
+      const duration = 15;
+
+      for (let i = 0; i < 10; i++) {
+        const x1 = Math.random() * window.innerWidth;
+        const y1 = Math.random() * window.innerHeight;
+        const x2 = x1 + (Math.random() - 0.5) * 1500;
+        const y2 = y1 + (Math.random() - 0.5) * 1500;
+
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute('d', generateWildWavyPath(x1, y1, x2, y2));
+        path.setAttribute('stroke', colors[Math.floor(Math.random() * colors.length)]);
+        path.classList.add('deco-path');
+
+        path.style.strokeWidth = thickness;
+        path.style.opacity = Math.random() * 0.3 + 0.5;
+
+        const delay = Math.random() * 0.5;
+        path.style.animationDuration = `${duration}s`;
+        path.style.animationDelay = `${delay}s`;
+        path.style.animationTimingFunction = "cubic-bezier(0.4, 0, 0.2, 1)";
+
+        decorationsArea.appendChild(path);
+        const length = path.getTotalLength();
+        path.style.strokeDasharray = length;
+        path.style.strokeDashoffset = length;
+      }
+
+      // Fade out and clear animations after 5 seconds
+      setTimeout(() => {
+        decorationsArea.style.transition = 'opacity 1s ease';
+        decorationsArea.style.opacity = '0';
+        setTimeout(() => {
+          decorationsArea.innerHTML = '';
+          decorationsArea.style.opacity = '1';
+          decorationsArea.style.transition = '';
+        }, 1000);
+      }, 5000);
+    }
+
+    function generateWildWavyPath(x1, y1, x2, y2) {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const chaosX = (Math.random() - 0.5) * 1000;
+      const chaosY = (Math.random() - 0.5) * 1000;
+      const ctrl1X = x1 + dx * 0.3 + chaosX;
+      const ctrl1Y = y1 + dy * 0.3 + chaosY;
+      const ctrl2X = x2 - dx * 0.3 - chaosX;
+      const ctrl2Y = y2 - dy * 0.3 - chaosY;
+      return `M ${x1} ${y1} C ${ctrl1X} ${ctrl1Y}, ${ctrl2X} ${ctrl2Y}, ${x2} ${y2}`;
+    }
+
+    // Mouse movement line tracking
+    document.addEventListener('mousemove', (e) => {
+      if (selectedCards.length === 1 && !isChecking) {
+        connectionLine.setAttribute('d', generateSimpleWavyPath(startX, startY, e.clientX, e.clientY));
+
+        const card1 = selectedCards[0];
+        let closestCard = null;
+        let minDist = Infinity;
+
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+          if (card !== card1.element && !card.classList.contains('matched')) {
+            const rect = card.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const dist = Math.hypot(centerX - e.clientX, centerY - e.clientY);
+
+            if (dist < minDist) {
+              minDist = dist;
+              closestCard = card;
+            }
+          }
+        });
+
+        if (closestCard) {
+          const effectRadius = 300;
+          let normalizedDist = Math.min(minDist, effectRadius) / effectRadius;
+
+          if (closestCard.dataset.pairId === card1.card.pairId) {
+            let thickness = 4 + (1 - normalizedDist) * 12;
+            connectionLine.style.strokeWidth = thickness;
+          } else {
+            let thickness = 4 - (1 - normalizedDist) * 3;
+            connectionLine.style.strokeWidth = Math.max(1, thickness);
+          }
+        }
+      }
+    });
+
+    // Window resize handler
+    window.addEventListener('resize', () => {
+      positionCards();
+      if (selectedCards.length === 1) {
+        const rect = selectedCards[0].element.getBoundingClientRect();
+        startX = rect.left + rect.width / 2;
+        startY = rect.top + rect.height / 2;
+      }
+    });
+
+    // Introduction steps flow
+    function nextIntroStep() {
+      const introOverlay = document.getElementById("intro-overlay");
+      const introChar = document.getElementById("intro-char-img");
+      const introTitle = document.getElementById("intro-title");
+      const introText = document.getElementById("intro-text");
+      const btnNext = document.getElementById("btn-intro-next");
+
+      if (introStep === 1) {
+        introStep = 2;
+
+        introChar.style.opacity = 0;
+        setTimeout(() => {
+          introChar.src = "image/avatar/Open Peeps - Standing (6) 1.png"; // Talking Éléna
+          introChar.style.opacity = 1;
+        }, 200);
+
+        introTitle.textContent = "Règles du jeu";
+        introText.innerHTML = `
+          Le but est d'établir des connexions entre le vivant et l'ingénierie :
+          <ul>
+            <li><strong>Associez deux cartes</strong> : un fragment biologique (Nature) et un fragment technologique ou architectural qui s'en inspire.</li>
+            <li>Le lien se dessine à la souris et se valide <strong>automatiquement</strong> après sélection de la deuxième carte.</li>
+            <li>Chaque paire correcte renforce la <strong>stabilité globale du projet Séquoia</strong> !</li>
+          </ul>
+        `;
+        btnNext.innerHTML = 'Jouer ! <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+      } else {
+        introOverlay.classList.add("hidden");
+      }
+    }
+
+    // Show rules from header button
+    function showRulesPopup() {
+      introStep = 2;
+      const introOverlay = document.getElementById("intro-overlay");
+      const introChar = document.getElementById("intro-char-img");
+      const introTitle = document.getElementById("intro-title");
+      const introText = document.getElementById("intro-text");
+      const btnNext = document.getElementById("btn-intro-next");
+
+      introChar.src = "image/avatar/Open Peeps - Standing (6) 1.png";
+      introTitle.textContent = "Règles du jeu";
+      introText.innerHTML = `
+        Le but est d'établir des connexions entre le vivant et l'ingénierie :
+        <ul>
+          <li><strong>Associez deux cartes</strong> : un fragment biologique (Nature) et un fragment technologique ou architectural qui s'en inspire.</li>
+          <li>Le lien se dessine à la souris et se valide <strong>automatiquement</strong> après sélection de la deuxième carte.</li>
+          <li>Chaque paire correcte renforce la <strong>stabilité globale du projet Séquoia</strong> !</li>
+        </ul>
+      `;
+      btnNext.innerHTML = 'Reprendre le jeu <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+      introOverlay.classList.remove("hidden");
+    }
+
+    // End Screen Trigger
+    function showEndScreen() {
+      window.location.href = "end.html";
+    }
+
+    function restartGame() {
+      initGame();
+    }
+  </script>
+</body>
+
+</html>

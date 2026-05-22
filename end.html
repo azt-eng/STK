@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STK Architecture — Projet Stabilisé</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;700&family=Montserrat:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --cream: #F5F0E8;
+      --cream-light: #FAF7F2;
+      --white: #FFFFFF;
+      --teal: #1E6B5E;
+      --teal-dark: #12473E;
+      --teal-light: #2D8E7D;
+      --teal-pale: #B8D8D3;
+      --teal-xpale: #E6F2F0;
+      --text-dark: #16251D;
+      --text-mid: #3B5448;
+      --text-light: #708C7F;
+      --warm-gray: #D0C7B9;
+      --font-display: 'Playfair Display', serif;
+      --font-body: 'DM Sans', sans-serif;
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 8px;
+      --shadow-sm: 0 4px 12px rgba(30, 107, 94, 0.05);
+      --shadow-md: 0 10px 30px rgba(30, 107, 94, 0.1);
+      --shadow-lg: 0 20px 50px rgba(22, 37, 29, 0.15);
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--cream);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Organic noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Background organic shapes */
+    .bg-shape-1 {
+      position: absolute;
+      top: -10%;
+      right: -5%;
+      width: 50vw;
+      height: 50vw;
+      background: radial-gradient(circle, rgba(30, 107, 94, 0.06) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-shape-2 {
+      position: absolute;
+      bottom: -10%;
+      left: -5%;
+      width: 40vw;
+      height: 40vw;
+      background: radial-gradient(circle, rgba(184, 216, 211, 0.2) 0%, transparent 75%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ===== HEADER ===== */
+    .site-header {
+      background: rgba(250, 247, 242, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(208, 199, 185, 0.4);
+      padding: 16px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      z-index: 10;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .logo {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--teal);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: var(--transition);
+    }
+
+    .logo:hover {
+      opacity: 0.85;
+      transform: translateY(-1px);
+    }
+
+    .logo-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--teal-light);
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* ===== MAIN LAYOUT ===== */
+    .main-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      z-index: 1;
+    }
+
+    .end-container {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(208, 199, 185, 0.5);
+      box-shadow: var(--shadow-lg);
+      padding: 60px;
+      max-width: 900px;
+      width: 100%;
+      display: flex;
+      gap: 48px;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      animation: slideUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .end-left {
+      flex: 1;
+    }
+
+    .end-tag {
+      display: inline-block;
+      background: var(--teal-xpale);
+      color: var(--teal);
+      border: 1px solid var(--teal-pale);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-bottom: 16px;
+    }
+
+    .end-title {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--text-dark);
+      line-height: 1.1;
+      margin-bottom: 18px;
+    }
+
+    .end-title em {
+      font-style: italic;
+      color: var(--teal);
+    }
+
+    .end-desc {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--text-mid);
+      margin-bottom: 16px;
+    }
+
+    .end-thanks {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--teal-dark);
+      margin-bottom: 32px;
+      line-height: 1.6;
+      font-family: var(--font-display);
+      font-style: italic;
+    }
+
+    .end-right {
+      flex: 0 0 300px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .end-character-img {
+      width: 100%;
+      max-height: 380px;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 24px rgba(30, 107, 94, 0.2));
+      animation: charFloat 4s ease-in-out infinite;
+    }
+
+    @keyframes charFloat {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn-group {
+      display: flex;
+      gap: 16px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border-radius: var(--radius-md);
+      padding: 14px 28px;
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+      text-decoration: none;
+    }
+
+    .btn-secondary {
+      background: var(--cream);
+      color: var(--text-mid);
+      border: 1px solid var(--warm-gray);
+    }
+
+    .btn-secondary:hover {
+      background: var(--white);
+      color: var(--teal);
+      border-color: var(--teal-pale);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary {
+      background: var(--teal);
+      color: var(--white);
+      box-shadow: 0 4px 14px rgba(30, 107, 94, 0.25);
+    }
+
+    .btn-primary:hover {
+      background: var(--teal-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(30, 107, 94, 0.35);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+      .end-container {
+        flex-direction: column-reverse;
+        padding: 40px;
+        gap: 32px;
+        text-align: center;
+      }
+
+      .end-right {
+        flex: none;
+        width: 180px;
+      }
+
+      .end-character-img {
+        max-height: 240px;
+      }
+
+      .btn-group {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .site-header {
+        padding: 12px 20px;
+      }
+
+      .end-title {
+        font-size: 2.2rem;
+      }
+
+      .btn {
+        padding: 12px 20px;
+        font-size: 0.8rem;
+      }
+
+      .btn-group {
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Background shapes -->
+  <div class="bg-shape-1"></div>
+  <div class="bg-shape-2"></div>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <a href="index.html" class="logo">
+      <span class="logo-dot"></span>
+      STK Architecture
+    </a>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <div class="end-container">
+      <div class="end-left">
+        <span class="end-tag">Félicitations</span>
+        <h2 class="end-title">Projet <em>STK Biomimétisme</em> Stabilisé !</h2>
+
+        <p class="end-desc">
+          Incroyable ! Grâce à votre compréhension fine des analogies biologiques, les structures du Séquoia Millénaire
+          reposent désormais sur des bases biophiliques robustes. La nature et la technique ne font plus qu'un.
+        </p>
+
+        <p class="end-thanks">
+          Un grand merci d'avoir joué à STK Architecture ! Nous espérons que ce voyage au cœur du biomimétisme vous aura
+          inspiré autant que la nature inspire nos ingénieurs au quotidien.
+        </p>
+
+        <div class="btn-group">
+          <a href="game.html" class="btn btn-primary">
+            Rejouer
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+            </svg>
+          </a>
+          <a href="index.html" class="btn btn-secondary">
+            Retourner à l'accueil
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="end-right">
+        <img src="image/avatar/Open Peeps - Standing (5) 1.png" alt="Éléna - Félicitations" class="end-character-img">
+      </div>
+    </div>
+  </main>
+
+</body>
+
+</html>
